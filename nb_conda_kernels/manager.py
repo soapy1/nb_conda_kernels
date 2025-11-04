@@ -8,6 +8,7 @@ import sys
 import time
 import glob
 import psutil
+from pathlib import Path
 
 import os
 from os.path import join, split, dirname, basename, abspath
@@ -205,6 +206,19 @@ class CondaKernelSpecManager(KernelSpecManager):
 
         return self._conda_info_cache
 
+    def _get_araki_envs(self) -> dict[str, str]:
+        """Find all environments managed my araki. Returns a dict with
+            canonical environment names as keys, and full paths as values.
+        """
+        self.log.debug("collecting all araki envs")
+        araki_envs = {}
+        araki_envs_dir = Path.home()/ ".araki" / "envs"
+        for path in os.listdir(araki_envs_dir):
+            self.log.debug(f"found araki env {path}")
+            araki_envs[f"araki-{path}"] = str(araki_envs_dir / path / ".pixi" / "envs" / "default")
+        self.log.debug(f"collected all araki envs {araki_envs}")
+        return araki_envs
+
     def _all_envs(self):
         """ Find all of the environments we should be checking. We skip
             environments in the conda-bld directory. Returns a dict with
@@ -248,6 +262,8 @@ class CondaKernelSpecManager(KernelSpecManager):
                     if env_name not in all_envs:
                         break
             all_envs[env_name] = env_path
+        
+        all_envs.update(self._get_araki_envs())
         return all_envs
 
     def _all_specs(self):

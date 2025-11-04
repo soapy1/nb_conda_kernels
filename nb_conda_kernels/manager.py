@@ -213,9 +213,13 @@ class CondaKernelSpecManager(KernelSpecManager):
         self.log.debug("collecting all araki envs")
         araki_envs = {}
         araki_envs_dir = Path.home()/ ".araki" / "envs"
-        for path in os.listdir(araki_envs_dir):
-            self.log.debug(f"found araki env {path}")
-            araki_envs[f"araki-{path}"] = str(araki_envs_dir / path / ".pixi" / "envs" / "default")
+        if os.path.exists(araki_envs_dir):
+            for path in os.listdir(araki_envs_dir):
+                self.log.debug(f"found araki env {path}")
+                araki_envs[f"araki-{path}"] = str(araki_envs_dir / path / ".pixi" / "envs" / "default")
+        else:
+            self.log.debug(f"Araki env dir is not found at {araki_envs_dir}")
+        
         self.log.debug(f"collected all araki envs {araki_envs}")
         return araki_envs
 
